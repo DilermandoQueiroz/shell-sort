@@ -8,6 +8,9 @@
 #include "InsertionSort.h"
 #include "BubbleSort.h"
 #include "HeapSort.h"
+#include "MergeSort.h"
+#include "QuickSort.h"
+#include "ShellSort.h"
 #include "Metrics.h"
 
 using namespace std;
@@ -82,7 +85,23 @@ int main() {
         testSortingAlgorithm(heapSort, almostSortedArray, outputFile, "HeapSort", "AlmostSorted", size);
         testSortingAlgorithm(heapSort, randomArray, outputFile, "HeapSort", "Random", size);
 
-        // Outros testes de algoritmos serão adicionados aqui posteriormente
+        // Test MergeSort
+        testSortingAlgorithm(mergeSort, sortedArray, outputFile, "MergeSort", "Sorted", size);
+        testSortingAlgorithm(mergeSort, reversedArray, outputFile, "MergeSort", "Reversed", size);
+        testSortingAlgorithm(mergeSort, almostSortedArray, outputFile, "MergeSort", "AlmostSorted", size);
+        testSortingAlgorithm(mergeSort, randomArray, outputFile, "MergeSort", "Random", size);
+
+        // Test QuickSort
+        testSortingAlgorithm(quickSort, sortedArray, outputFile, "QuickSort", "Sorted", size);
+        testSortingAlgorithm(quickSort, reversedArray, outputFile, "QuickSort", "Reversed", size);
+        testSortingAlgorithm(quickSort, almostSortedArray, outputFile, "QuickSort", "AlmostSorted", size);
+        testSortingAlgorithm(quickSort, randomArray, outputFile, "QuickSort", "Random", size);
+
+        // Test ShellSort
+        testSortingAlgorithm(shellSort, sortedArray, outputFile, "ShellSort", "Sorted", size);
+        testSortingAlgorithm(shellSort, reversedArray, outputFile, "ShellSort", "Reversed", size);
+        testSortingAlgorithm(shellSort, almostSortedArray, outputFile, "ShellSort", "AlmostSorted", size);
+        testSortingAlgorithm(shellSort, randomArray, outputFile, "ShellSort", "Random", size);
     }
 
     outputFile.close();
