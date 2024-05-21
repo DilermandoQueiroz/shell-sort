@@ -52,6 +52,7 @@ Este arquivo define como compilar o projeto utilizando o compilador `g++`.
         "HeapSort.cpp",
         "MergeSort.cpp",
         "QuickSort.cpp",
+        "ShellSort.cpp"
         "-o",
         "sorting_analysis"
       ],
@@ -131,7 +132,7 @@ Este arquivo configura a depuração do código no VS Code.
 
 3. **Compile o código**:
    ```sh
-   g++ -g Main.cpp InsertionSort.cpp SelectionSort.cpp BubbleSort.cpp HeapSort.cpp MergeSort.cpp QuickSort.cpp -o sorting_analysis
+   g++ -g Main.cpp InsertionSort.cpp SelectionSort.cpp BubbleSort.cpp HeapSort.cpp MergeSort.cpp QuickSort.cpp ShellSort.cpp -o sorting_analysis
    ```
 
 4. **Execute o executável gerado**:

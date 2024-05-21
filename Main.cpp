@@ -10,6 +10,7 @@
 #include "HeapSort.h"
 #include "MergeSort.h"
 #include "QuickSort.h"
+#include "ShellSort.h"  // Inclua o Shell Sort
 
 using namespace std;
 using namespace chrono;
@@ -104,6 +105,12 @@ int main() {
         testSortingAlgorithm(quickSort, reversedArray, outputFile, "QuickSort", "Reversed", size);
         testSortingAlgorithm(quickSort, almostSortedArray, outputFile, "QuickSort", "AlmostSorted", size);
         testSortingAlgorithm(quickSort, randomArray, outputFile, "QuickSort", "Random", size);
+
+        // Test ShellSort
+        testSortingAlgorithm(shellSort, sortedArray, outputFile, "ShellSort", "Sorted", size);
+        testSortingAlgorithm(shellSort, reversedArray, outputFile, "ShellSort", "Reversed", size);
+        testSortingAlgorithm(shellSort, almostSortedArray, outputFile, "ShellSort", "AlmostSorted", size);
+        testSortingAlgorithm(shellSort, randomArray, outputFile, "ShellSort", "Random", size);
     }
 
     outputFile.close();
