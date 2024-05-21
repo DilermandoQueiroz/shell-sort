@@ -1,0 +1,29 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+	  {
+		"label": "build",
+		"type": "shell",
+		"command": "g++",
+		"args": [
+		  "-g",
+		  "Main.cpp",
+		  "InsertionSort.cpp",
+		  "SelectionSort.cpp",
+		  "BubbleSort.cpp",
+		  "HeapSort.cpp",
+		  "MergeSort.cpp",
+		  "QuickSort.cpp",
+		  "-o",
+		  "sorting_analysis"
+		],
+		"group": {
+		  "kind": "build",
+		  "isDefault": true
+		},
+		"problemMatcher": ["$gcc"],
+		"detail": "Compilação do projeto para P1 de AAED"
+	  }
+	]
+  }
+  
