@@ -8,12 +8,12 @@
             "args": [
                 "-g",
                 "Main.cpp",
-                "InsertionSort.cpp",
-                "SelectionSort.cpp",
-                "BubbleSort.cpp",
-                "HeapSort.cpp",
-                "MergeSort.cpp",
-                "QuickSort.cpp",
+                "insertionSort.cpp",
+                "selectionSort.cpp",
+                "bubbleSort.cpp",
+                "heapSort.cpp",
+                "mergeSort.cpp",
+                "quickSort.cpp",
                 "-o",
                 "sorting_analysis"
             ],

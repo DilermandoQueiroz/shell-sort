@@ -4,13 +4,11 @@
 #include <chrono>
 #include <random>
 #include <algorithm>
+#include <numeric>  // Adicionar este cabeçalho para std::iota
 #include "InsertionSort.h"
-#include "SelectionSort.h"
 #include "BubbleSort.h"
 #include "HeapSort.h"
-#include "MergeSort.h"
-#include "QuickSort.h"
-#include "ShellSort.h"  // Inclua o Shell Sort
+#include "Metrics.h"
 
 using namespace std;
 using namespace chrono;
@@ -18,13 +16,13 @@ using namespace chrono;
 // Funções para gerar arranjos
 vector<int> generateSortedArray(int size) {
     vector<int> arr(size);
-    iota(arr.begin(), arr.end(), 0);
+    iota(arr.begin(), arr.end(), 0);  // std::iota preenche o array com valores sequenciais
     return arr;
 }
 
 vector<int> generateReversedArray(int size) {
     vector<int> arr(size);
-    iota(arr.rbegin(), arr.rend(), 0);
+    iota(arr.rbegin(), arr.rend(), 0);  // std::iota preenche o array com valores sequenciais em ordem reversa
     return arr;
 }
 
@@ -50,18 +48,14 @@ vector<int> generateRandomArray(int size) {
 }
 
 // Função para testar um algoritmo de ordenação
-void testSortingAlgorithm(void (*sortFunction)(vector<int>&), vector<int>& arr, ofstream& outputFile, const string& algorithmName, const string& arrayType, int size) {
-    auto start = high_resolution_clock::now();
-    sortFunction(arr);
-    auto end = high_resolution_clock::now();
-    double duration = duration_cast<microseconds>(end - start).count();
-
-    outputFile << algorithmName << "," << arrayType << "," << size << "," << duration << endl;
+void testSortingAlgorithm(Metrics (*sortFunction)(vector<int>&), vector<int>& arr, ofstream& outputFile, const string& algorithmName, const string& arrayType, int size) {
+    Metrics metrics = sortFunction(arr);
+    outputFile << algorithmName << "," << arrayType << "," << size << "," << metrics.comparisons << "," << metrics.movements << "," << metrics.time_us << endl;
 }
 
 int main() {
     ofstream outputFile("sorting_results.csv");
-    outputFile << "Algorithm,ArrayType,Size,Time(us)" << endl;
+    outputFile << "Algorithm,ArrayType,Size,Comparisons,Movements,Time(us)" << endl;
 
     vector<int> sizes = {10, 100, 1000, 10000, 100000, 1000000};
     for (int size : sizes) {
@@ -76,12 +70,6 @@ int main() {
         testSortingAlgorithm(insertionSort, almostSortedArray, outputFile, "InsertionSort", "AlmostSorted", size);
         testSortingAlgorithm(insertionSort, randomArray, outputFile, "InsertionSort", "Random", size);
 
-        // Test SelectionSort
-        testSortingAlgorithm(selectionSort, sortedArray, outputFile, "SelectionSort", "Sorted", size);
-        testSortingAlgorithm(selectionSort, reversedArray, outputFile, "SelectionSort", "Reversed", size);
-        testSortingAlgorithm(selectionSort, almostSortedArray, outputFile, "SelectionSort", "AlmostSorted", size);
-        testSortingAlgorithm(selectionSort, randomArray, outputFile, "SelectionSort", "Random", size);
-
         // Test BubbleSort
         testSortingAlgorithm(bubbleSort, sortedArray, outputFile, "BubbleSort", "Sorted", size);
         testSortingAlgorithm(bubbleSort, reversedArray, outputFile, "BubbleSort", "Reversed", size);
@@ -94,23 +82,7 @@ int main() {
         testSortingAlgorithm(heapSort, almostSortedArray, outputFile, "HeapSort", "AlmostSorted", size);
         testSortingAlgorithm(heapSort, randomArray, outputFile, "HeapSort", "Random", size);
 
-        // Test MergeSort
-        testSortingAlgorithm(mergeSort, sortedArray, outputFile, "MergeSort", "Sorted", size);
-        testSortingAlgorithm(mergeSort, reversedArray, outputFile, "MergeSort", "Reversed", size);
-        testSortingAlgorithm(mergeSort, almostSortedArray, outputFile, "MergeSort", "AlmostSorted", size);
-        testSortingAlgorithm(mergeSort, randomArray, outputFile, "MergeSort", "Random", size);
-
-        // Test QuickSort
-        testSortingAlgorithm(quickSort, sortedArray, outputFile, "QuickSort", "Sorted", size);
-        testSortingAlgorithm(quickSort, reversedArray, outputFile, "QuickSort", "Reversed", size);
-        testSortingAlgorithm(quickSort, almostSortedArray, outputFile, "QuickSort", "AlmostSorted", size);
-        testSortingAlgorithm(quickSort, randomArray, outputFile, "QuickSort", "Random", size);
-
-        // Test ShellSort
-        testSortingAlgorithm(shellSort, sortedArray, outputFile, "ShellSort", "Sorted", size);
-        testSortingAlgorithm(shellSort, reversedArray, outputFile, "ShellSort", "Reversed", size);
-        testSortingAlgorithm(shellSort, almostSortedArray, outputFile, "ShellSort", "AlmostSorted", size);
-        testSortingAlgorithm(shellSort, randomArray, outputFile, "ShellSort", "Random", size);
+        // Outros testes de algoritmos serão adicionados aqui posteriormente
     }
 
     outputFile.close();
