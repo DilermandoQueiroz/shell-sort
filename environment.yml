@@ -1,0 +1,9 @@
+name: shell-short
+channels:
+  - defaults
+dependencies:
+  - pandas
+  - ipykernel
+  - matplotlib
+  - seaborn
+prefix: /opt/homebrew/Caskroom/miniconda/base/envs/shell-short
