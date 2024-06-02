@@ -1,5 +1,6 @@
 #include "QuickSort.h"
 #include <chrono>
+#include <stack>
 
 // Função auxiliar para particionar o array
 int partition(std::vector<int>& arr, int low, int high, Metrics& metrics) {
@@ -19,14 +20,29 @@ int partition(std::vector<int>& arr, int low, int high, Metrics& metrics) {
     return i + 1;
 }
 
-// O Quick Sort escolhe um pivô e particiona o array em dois sub-arrays,
-// onde os elementos à esquerda do pivô são menores e à direita são maiores
-// Em seguida, ordena recursivamente os sub-arrays
-void quickSortHelper(std::vector<int>& arr, int low, int high, Metrics& metrics) {
-    if (low < high) {
-        int pi = partition(arr, low, high, metrics); // Índice de particionamento
-        quickSortHelper(arr, low, pi - 1, metrics);  // Ordena a parte esquerda do pivô
-        quickSortHelper(arr, pi + 1, high, metrics); // Ordena a parte direita do pivô
+// Versão iterativa do Quick Sort
+void quickSortIterative(std::vector<int>& arr, int low, int high, Metrics& metrics) {
+    // Cria uma pilha auxiliar para armazenar os índices de sub-arrays
+    std::stack<std::pair<int, int>> stack;
+    stack.push(std::make_pair(low, high));
+
+    while (!stack.empty()) {
+        low = stack.top().first;
+        high = stack.top().second;
+        stack.pop();
+
+        // Particiona o array
+        int pi = partition(arr, low, high, metrics);
+
+        // Se houver elementos à esquerda do pivô, adiciona ao stack
+        if (pi - 1 > low) {
+            stack.push(std::make_pair(low, pi - 1));
+        }
+
+        // Se houver elementos à direita do pivô, adiciona ao stack
+        if (pi + 1 < high) {
+            stack.push(std::make_pair(pi + 1, high));
+        }
     }
 }
 
@@ -34,7 +50,7 @@ Metrics quickSort(std::vector<int>& arr) {
     Metrics metrics = {0, 0, 0.0};
     auto start = std::chrono::high_resolution_clock::now(); // Inicia a contagem do tempo
 
-    quickSortHelper(arr, 0, arr.size() - 1, metrics);
+    quickSortIterative(arr, 0, arr.size() - 1, metrics);
 
     auto end = std::chrono::high_resolution_clock::now(); // Finaliza a contagem do tempo
     metrics.time_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count(); // Calcula o tempo de execução
