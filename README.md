@@ -146,4 +146,4 @@ O programa gera um arquivo `sorting_results.csv` contendo os dados de desempenho
 
 ### Leitura dos Dados no Python
 
-TODO
+Executar o Jupyter notebook apos gerar o  `sorting_results.csv`
