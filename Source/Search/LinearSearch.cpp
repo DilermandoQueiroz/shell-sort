@@ -8,6 +8,7 @@ Metrics linearSearch(const std::vector<int>& arr, int target) {
     for (size_t i = 0; i < arr.size(); ++i) {
         metrics.comparisons++; // Incrementa a contagem de comparações
         if (arr[i] == target) {
+            metrics.movements = 1;
             break; // Sai do loop quando o elemento é encontrado
         }
     }
