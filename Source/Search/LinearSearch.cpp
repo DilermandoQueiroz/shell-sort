@@ -1,4 +1,4 @@
-#include "LinearSearch.h"
+#include "linearSearch.h"
 #include <chrono>
 
 Metrics linearSearch(const std::vector<int>& arr, int target) {
