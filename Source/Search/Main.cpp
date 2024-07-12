@@ -5,12 +5,12 @@
 #include <random>
 #include <algorithm>
 #include <numeric>
-#include <linearSearch.h>
-#include <binarySearch.h>
-#include <binarySearchTree.h>
-#include <AVLTree.h>
-#include <redBlackTree.h>
-#include "Metrics.h"
+#include "linearSearch.h"
+#include "binarySearch.h"
+#include "binarySearchTree.h"
+#include "AVLTree.h"
+#include "redBlackTree.h"
+#include "metrics.h"
 
 using namespace std;
 using namespace chrono;
@@ -49,21 +49,47 @@ vector<int> generateRandomArray(int size) {
     return arr;
 }
 
-// Função para testar um algoritmo de busca
-void testSearchAlgorithm(Metrics (*searchFunction)(const vector<int>&, int), vector<int>& arr, int target, ofstream& outputFile, const string& algorithmName, const string& arrayType, int size) {
+// Função para testar inserção, remoção e busca em árvores
+template <typename Tree>
+void testTreeOperations(Tree& tree, const vector<int>& arr, int additionalValue, int target, ofstream& outputFile, const string& treeName, const string& arrayType, int size) {
     try {
-        cerr << "Testando " << algorithmName << " no array " << arrayType << " de tamanho " << size << endl;
-        Metrics metrics = searchFunction(arr, target);
-        outputFile << algorithmName << "," << arrayType << "," << size << "," << metrics.comparisons << "," << metrics.movements << "," << metrics.time_us << endl;
-        cerr << algorithmName << " no array " << arrayType << " de tamanho " << size << " completado" << endl;
+        // Construir a árvore com os valores iniciais
+        for (int val : arr) {
+            tree.insert(val);
+        }
+
+        // Inserção de um valor adicional
+        Metrics insertMetrics = tree.insert(additionalValue);
+        outputFile << treeName << "_Insert," << arrayType << "," << size << "," << insertMetrics.comparisons << "," << insertMetrics.movements << "," << insertMetrics.time_us << endl;
+
+        // Busca
+        Metrics searchMetrics = tree.search(target);
+        outputFile << treeName << "_Search," << arrayType << "," << size << "," << searchMetrics.comparisons << "," << searchMetrics.movements << "," << searchMetrics.time_us << endl;
+
+        // Remoção
+        Metrics removeMetrics = tree.remove(target);
+        outputFile << treeName << "_Remove," << arrayType << "," << size << "," << removeMetrics.comparisons << "," << removeMetrics.movements << "," << removeMetrics.time_us << endl;
+
     } catch (const exception& e) {
-        cerr << "Erro ao testar " << algorithmName << " no array " << arrayType << " de tamanho " << size << ": " << e.what() << endl;
+        cerr << "Erro ao testar " << treeName << " no array " << arrayType << " de tamanho " << size << ": " << e.what() << endl;
+    }
+}
+
+// Função para testar busca em arrays
+void testSearchFunction(Metrics (*searchFunction)(const vector<int>&, int), const vector<int>& arr, int target, ofstream& outputFile, const string& functionName, const string& arrayType, int size) {
+    try {
+        cerr << "Testando " << functionName << " no array " << arrayType << " de tamanho " << size << endl;
+        Metrics metrics = searchFunction(arr, target);
+        outputFile << functionName << "," << arrayType << "," << size << "," << metrics.comparisons << "," << metrics.movements << "," << metrics.time_us << endl;
+        cerr << functionName << " no array " << arrayType << " de tamanho " << size << " completado" << endl;
+    } catch (const exception& e) {
+        cerr << "Erro ao testar " << functionName << " no array " << arrayType << " de tamanho " << size << ": " << e.what() << endl;
     }
 }
 
 int main() {
     ofstream outputFile("search_results.csv");
-    outputFile << "Algorithm,ArrayType,Size,Comparisons,Movements,Time(us)" << endl;
+    outputFile << "Operation,ArrayType,Size,Comparisons,Movements,Time(us)" << endl;
 
     vector<int> sizes = {10, 100, 1000, 10000, 100000, 1000000};
     for (int size : sizes) {
@@ -74,73 +100,47 @@ int main() {
         vector<int> reversedArray = generateReversedArray(size);
         vector<int> almostSortedArray = generateAlmostSortedArray(size);
         vector<int> randomArray = generateRandomArray(size);
-        int target = randomArray[size / 2];
+        int target = sortedArray[size / 2]; // Um valor presente nos arrays
+        int additionalValue = size + 1; // Um valor que será inserido adicionalmente
 
         // Testar LinearSearch
-        testSearchAlgorithm(linearSearch, sortedArray, target, outputFile, "LinearSearch", "Sorted", size);
-        testSearchAlgorithm(linearSearch, reversedArray, target, outputFile, "LinearSearch", "Reversed", size);
-        testSearchAlgorithm(linearSearch, almostSortedArray, target, outputFile, "LinearSearch", "AlmostSorted", size);
-        testSearchAlgorithm(linearSearch, randomArray, target, outputFile, "LinearSearch", "Random", size);
+        testSearchFunction(linearSearch, sortedArray, target, outputFile, "LinearSearch", "Sorted", size);
+        testSearchFunction(linearSearch, reversedArray, target, outputFile, "LinearSearch", "Reversed", size);
+        testSearchFunction(linearSearch, almostSortedArray, target, outputFile, "LinearSearch", "AlmostSorted", size);
+        testSearchFunction(linearSearch, randomArray, target, outputFile, "LinearSearch", "Random", size);
 
         // Testar BinarySearch
-        testSearchAlgorithm(binarySearch, sortedArray, target, outputFile, "BinarySearch", "Sorted", size);
-        testSearchAlgorithm(binarySearch, reversedArray, target, outputFile, "BinarySearch", "Reversed", size);
-        testSearchAlgorithm(binarySearch, almostSortedArray, target, outputFile, "BinarySearch", "AlmostSorted", size);
-        testSearchAlgorithm(binarySearch, randomArray, target, outputFile, "BinarySearch", "Random", size);
+        testSearchFunction(binarySearch, sortedArray, target, outputFile, "BinarySearch", "Sorted", size);
+        testSearchFunction(binarySearch, reversedArray, target, outputFile, "BinarySearch", "Reversed", size);
+        testSearchFunction(binarySearch, almostSortedArray, target, outputFile, "BinarySearch", "AlmostSorted", size);
+        testSearchFunction(binarySearch, randomArray, target, outputFile, "BinarySearch", "Random", size);
 
         // Testar BinarySearchTree
-        BinarySearchTree bst;
-        for (int val : sortedArray) bst.insert(val);
-        Metrics bstMetrics = bst.search(target);
-        outputFile << "BinarySearchTree,Sorted," << size << "," << bstMetrics.comparisons << "," << bstMetrics.movements << "," << bstMetrics.time_us << endl;
-
-        for (int val : reversedArray) bst.insert(val);
-        bstMetrics = bst.search(target);
-        outputFile << "BinarySearchTree,Reversed," << size << "," << bstMetrics.comparisons << "," << bstMetrics.movements << "," << bstMetrics.time_us << endl;
-
-        for (int val : almostSortedArray) bst.insert(val);
-        bstMetrics = bst.search(target);
-        outputFile << "BinarySearchTree,AlmostSorted," << size << "," << bstMetrics.comparisons << "," << bstMetrics.movements << "," << bstMetrics.time_us << endl;
-
-        for (int val : randomArray) bst.insert(val);
-        bstMetrics = bst.search(target);
-        outputFile << "BinarySearchTree,Random," << size << "," << bstMetrics.comparisons << "," << bstMetrics.movements << "," << bstMetrics.time_us << endl;
+        {
+            BinarySearchTree bst;
+            testTreeOperations(bst, sortedArray, additionalValue, target, outputFile, "BinarySearchTree", "Sorted", size);
+            testTreeOperations(bst, reversedArray, additionalValue, target, outputFile, "BinarySearchTree", "Reversed", size);
+            testTreeOperations(bst, almostSortedArray, additionalValue, target, outputFile, "BinarySearchTree", "AlmostSorted", size);
+            testTreeOperations(bst, randomArray, additionalValue, target, outputFile, "BinarySearchTree", "Random", size);
+        }
 
         // Testar AVLTree
-        AVLTree avl;
-        for (int val : sortedArray) avl.insert(val);
-        Metrics avlMetrics = avl.search(target);
-        outputFile << "AVLTree,Sorted," << size << "," << avlMetrics.comparisons << "," << avlMetrics.movements << "," << avlMetrics.time_us << endl;
-
-        for (int val : reversedArray) avl.insert(val);
-        avlMetrics = avl.search(target);
-        outputFile << "AVLTree,Reversed," << size << "," << avlMetrics.comparisons << "," << avlMetrics.movements << "," << avlMetrics.time_us << endl;
-
-        for (int val : almostSortedArray) avl.insert(val);
-        avlMetrics = avl.search(target);
-        outputFile << "AVLTree,AlmostSorted," << size << "," << avlMetrics.comparisons << "," << avlMetrics.movements << "," << avlMetrics.time_us << endl;
-
-        for (int val : randomArray) avl.insert(val);
-        avlMetrics = avl.search(target);
-        outputFile << "AVLTree,Random," << size << "," << avlMetrics.comparisons << "," << avlMetrics.movements << "," << avlMetrics.time_us << endl;
+        {
+            AVLTree avl;
+            testTreeOperations(avl, sortedArray, additionalValue, target, outputFile, "AVLTree", "Sorted", size);
+            testTreeOperations(avl, reversedArray, additionalValue, target, outputFile, "AVLTree", "Reversed", size);
+            testTreeOperations(avl, almostSortedArray, additionalValue, target, outputFile, "AVLTree", "AlmostSorted", size);
+            testTreeOperations(avl, randomArray, additionalValue, target, outputFile, "AVLTree", "Random", size);
+        }
 
         // Testar RedBlackTree
-        RedBlackTree rbt;
-        for (int val : sortedArray) rbt.insert(val);
-        Metrics rbtMetrics = rbt.search(target);
-        outputFile << "RedBlackTree,Sorted," << size << "," << rbtMetrics.comparisons << "," << rbtMetrics.movements << "," << rbtMetrics.time_us << endl;
-
-        for (int val : reversedArray) rbt.insert(val);
-        rbtMetrics = rbt.search(target);
-        outputFile << "RedBlackTree,Reversed," << size << "," << rbtMetrics.comparisons << "," << rbtMetrics.movements << "," << rbtMetrics.time_us << endl;
-
-        for (int val : almostSortedArray) rbt.insert(val);
-        rbtMetrics = rbt.search(target);
-        outputFile << "RedBlackTree,AlmostSorted," << size << "," << rbtMetrics.comparisons << "," << rbtMetrics.movements << "," << rbtMetrics.time_us << endl;
-
-        for (int val : randomArray) rbt.insert(val);
-        rbtMetrics = rbt.search(target);
-        outputFile << "RedBlackTree,Random," << size << "," << rbtMetrics.comparisons << "," << rbtMetrics.movements << "," << rbtMetrics.time_us << endl;
+        {
+            RedBlackTree rbt;
+            testTreeOperations(rbt, sortedArray, additionalValue, target, outputFile, "RedBlackTree", "Sorted", size);
+            testTreeOperations(rbt, reversedArray, additionalValue, target, outputFile, "RedBlackTree", "Reversed", size);
+            testTreeOperations(rbt, almostSortedArray, additionalValue, target, outputFile, "RedBlackTree", "AlmostSorted", size);
+            testTreeOperations(rbt, randomArray, additionalValue, target, outputFile, "RedBlackTree", "Random", size);
+        }
 
         // Liberação de memória
         sortedArray.clear();
