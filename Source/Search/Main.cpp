@@ -11,6 +11,7 @@
 #include "AVLTree.h"
 #include "RedBlackTree.h"
 #include "Metrics.h"
+#include "FingerTree.h"
 
 // Funções para gerar arranjos
 std::vector<int> generateSortedArray(int size) {
@@ -116,11 +117,57 @@ void testInsertRemoveAlgorithm(Metrics (*insertFunction)(std::vector<int>&, int)
     }
 }
 
-
 // Função para testar um algoritmo de inserção e remoção (para AVLTree)
 void testInsertRemoveAlgorithmTree(Metrics (AVLTree::*insertFunction)(int),
                                    Metrics (AVLTree::*removeFunction)(int),
                                    AVLTree& tree, 
+                                   std::vector<int>& arr, 
+                                   std::ofstream& outputFile, 
+                                   const std::string& algorithmName, 
+                                   const std::string& arrayType, 
+                                   int size, 
+                                   int target) {
+    try {
+        std::cerr << "Testando " << algorithmName << " no array " << arrayType << " de tamanho " << size << std::endl;
+        
+        if (!outputFile) {
+            throw std::runtime_error("Arquivo de saída não está aberto");
+        }
+
+        // Métricas de inserção
+        Metrics totalInsertMetrics = {algorithmName + "Insert", arrayType, size, 0, 0, 0.0};
+        auto start = std::chrono::high_resolution_clock::now();
+        for (const auto& value : arr) {
+            Metrics insertMetrics = (tree.*insertFunction)(value);
+            totalInsertMetrics.comparisons += insertMetrics.comparisons;
+            totalInsertMetrics.movements += insertMetrics.movements;
+        }
+        auto end = std::chrono::high_resolution_clock::now();
+        totalInsertMetrics.time_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+        outputFile << totalInsertMetrics.algorithm << "," << totalInsertMetrics.arrayType << "," << totalInsertMetrics.size << "," << totalInsertMetrics.comparisons << "," << totalInsertMetrics.movements << "," << totalInsertMetrics.time_us << std::endl;
+
+        // Métricas de remoção
+        Metrics totalRemoveMetrics = {algorithmName + "Remove", arrayType, size, 0, 0, 0.0};
+        start = std::chrono::high_resolution_clock::now();
+        for (const auto& value : arr) {
+            Metrics removeMetrics = (tree.*removeFunction)(value);
+            totalRemoveMetrics.comparisons += removeMetrics.comparisons;
+            totalRemoveMetrics.movements += removeMetrics.movements;
+        }
+        end = std::chrono::high_resolution_clock::now();
+        totalRemoveMetrics.time_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+        outputFile << totalRemoveMetrics.algorithm << "," << totalRemoveMetrics.arrayType << "," << totalRemoveMetrics.size << "," << totalRemoveMetrics.comparisons << "," << totalRemoveMetrics.movements << "," << totalRemoveMetrics.time_us << std::endl;
+
+        std::cerr << algorithmName << " no array " << arrayType << " de tamanho " << size << " completado" << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Erro ao testar " << algorithmName << " no array " << arrayType << " de tamanho " << size << ": " << e.what() << std::endl;
+    }
+}
+
+// Função para testar um algoritmo de inserção e remoção (para FingerTree)
+void testInsertRemoveAlgorithmFingerTree(Metrics (FingerTree::*insertFunction)(int),
+                                   Metrics (FingerTree::*removeFunction)(int),
+                                   FingerTree& tree, 
                                    std::vector<int>& arr, 
                                    std::ofstream& outputFile, 
                                    const std::string& algorithmName, 
@@ -200,6 +247,16 @@ int main() {
         testInsertRemoveAlgorithmTree(&AVLTree::insert, &AVLTree::remove, avlTree, almostSortedArray, outputFile, "AVLTree", "AlmostSorted", size, target);
         avlTree = AVLTree(); // Reiniciar a árvore para o próximo teste
         testInsertRemoveAlgorithmTree(&AVLTree::insert, &AVLTree::remove, avlTree, randomArray, outputFile, "AVLTree", "Random", size, target);
+
+        // Testar FingerTree
+        FingerTree fingerTree;
+        testInsertRemoveAlgorithmFingerTree(&FingerTree::insert, &FingerTree::remove, fingerTree, sortedArray, outputFile, "FingerTree", "Sorted", size, target);
+        fingerTree = FingerTree(); // Reiniciar a árvore para o próximo teste
+        testInsertRemoveAlgorithmFingerTree(&FingerTree::insert, &FingerTree::remove, fingerTree, reversedArray, outputFile, "FingerTree", "Reversed", size, target);
+        fingerTree = FingerTree(); // Reiniciar a árvore para o próximo teste
+        testInsertRemoveAlgorithmFingerTree(&FingerTree::insert, &FingerTree::remove, fingerTree, almostSortedArray, outputFile, "FingerTree", "AlmostSorted", size, target);
+        fingerTree = FingerTree(); // Reiniciar a árvore para o próximo teste
+        testInsertRemoveAlgorithmFingerTree(&FingerTree::insert, &FingerTree::remove, fingerTree, randomArray, outputFile, "FingerTree", "Random", size, target);
 
         // Liberação de memória
         sortedArray.clear();

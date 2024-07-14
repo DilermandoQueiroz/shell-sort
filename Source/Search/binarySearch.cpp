@@ -3,7 +3,7 @@
 #include <algorithm> // Para std::lower_bound e std::upper_bound
 
 Metrics binarySearch(const std::vector<int>& arr, int target) {
-    Metrics metrics = {0, 0, 0.0}; // Inicializa os valores de métricas
+    Metrics metrics = {0, 0, 0}; // Inicializa os valores de métricas
     auto start = std::chrono::high_resolution_clock::now(); // Inicia a contagem do tempo
 
     int left = 0;
@@ -27,7 +27,7 @@ Metrics binarySearch(const std::vector<int>& arr, int target) {
 }
 
 Metrics binaryInsert(std::vector<int>& arr, int target) {
-    Metrics metrics = {0, 0, 0.0}; // Inicializa os valores de métricas
+    Metrics metrics = {0, 0, 0}; // Inicializa os valores de métricas
     auto start = std::chrono::high_resolution_clock::now(); // Inicia a contagem do tempo
 
     auto it = std::lower_bound(arr.begin(), arr.end(), target);
@@ -41,7 +41,7 @@ Metrics binaryInsert(std::vector<int>& arr, int target) {
 }
 
 Metrics binaryRemove(std::vector<int>& arr, int target) {
-    Metrics metrics = {0, 0, 0.0}; // Inicializa os valores de métricas
+    Metrics metrics = {0, 0, 0}; // Inicializa os valores de métricas
     auto start = std::chrono::high_resolution_clock::now(); // Inicia a contagem do tempo
 
     auto it = std::lower_bound(arr.begin(), arr.end(), target);
