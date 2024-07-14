@@ -1,4 +1,5 @@
 #include "AVLTree.h"
+#include "Metrics.h"
 #include <chrono>
 #include <algorithm> // Para std::max
 
@@ -37,7 +38,7 @@ AVLNode* AVLTree::leftRotate(AVLNode* x) {
 }
 
 Metrics AVLTree::insert(int value) {
-    Metrics metrics = {0, 0, 0.0};
+    Metrics metrics = {"AVLTreeInsert", "Unknown", 0, 0, 0, 0.0};
     auto start = std::chrono::high_resolution_clock::now();
 
     root = insert(root, value, metrics);
@@ -86,7 +87,7 @@ AVLNode* AVLTree::insert(AVLNode* node, int value, Metrics& metrics) {
 }
 
 Metrics AVLTree::search(int value) {
-    Metrics metrics = {0, 0, 0.0};
+    Metrics metrics = {"AVLTreeSearch", "Unknown", 0, 0, 0, 0.0};
     auto start = std::chrono::high_resolution_clock::now();
 
     search(root, value, metrics);
@@ -110,7 +111,7 @@ AVLNode* AVLTree::search(AVLNode* node, int value, Metrics& metrics) {
 }
 
 Metrics AVLTree::remove(int value) {
-    Metrics metrics = {0, 0, 0.0};
+    Metrics metrics = {"AVLTreeRemove", "Unknown", 0, 0, 0, 0.0};
     auto start = std::chrono::high_resolution_clock::now();
 
     root = remove(root, value, metrics);

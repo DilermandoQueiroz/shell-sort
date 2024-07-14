@@ -5,142 +5,201 @@
 #include <random>
 #include <algorithm>
 #include <numeric>
-#include "linearSearch.h"
-#include "binarySearch.h"
-#include "binarySearchTree.h"
+#include "LinearSearch.h"
+#include "BinarySearch.h"
+#include "BinarySearchTree.h"
 #include "AVLTree.h"
-#include "redBlackTree.h"
-#include "metrics.h"
-
-using namespace std;
-using namespace chrono;
+#include "RedBlackTree.h"
+#include "Metrics.h"
 
 // Funções para gerar arranjos
-vector<int> generateSortedArray(int size) {
-    vector<int> arr(size);
-    iota(arr.begin(), arr.end(), 0);  
+std::vector<int> generateSortedArray(int size) {
+    std::vector<int> arr(size);
+    std::iota(arr.begin(), arr.end(), 1);
     return arr;
 }
 
-vector<int> generateReversedArray(int size) {
-    vector<int> arr(size);
-    iota(arr.rbegin(), arr.rend(), 0);  
+std::vector<int> generateReversedArray(int size) {
+    std::vector<int> arr(size);
+    std::iota(arr.rbegin(), arr.rend(), 1);
     return arr;
 }
 
-vector<int> generateAlmostSortedArray(int size) {
-    vector<int> arr = generateSortedArray(size);
-    random_device rd;
-    mt19937 gen(rd());
+std::vector<int> generateAlmostSortedArray(int size) {
+    std::vector<int> arr = generateSortedArray(size);
+    std::random_device rd;
+    std::mt19937 gen(rd());
     for (int i = 0; i < size / 10; ++i) {
-        swap(arr[gen() % size], arr[gen() % size]);
+        std::swap(arr[gen() % size], arr[gen() % size]);
     }
     return arr;
 }
 
-vector<int> generateRandomArray(int size) {
-    vector<int> arr(size);
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_int_distribution<> dis(0, size);
+std::vector<int> generateRandomArray(int size) {
+    std::vector<int> arr(size);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(1, size);
     for (int i = 0; i < size; ++i) {
         arr[i] = dis(gen);
     }
     return arr;
 }
 
-// Função para testar inserção, remoção e busca em árvores
-template <typename Tree>
-void testTreeOperations(Tree& tree, const vector<int>& arr, int additionalValue, int target, ofstream& outputFile, const string& treeName, const string& arrayType, int size) {
+// Função para testar um algoritmo de busca
+void testSearchAlgorithm(Metrics (*searchFunction)(const std::vector<int>&, int),
+                         std::vector<int>& arr, 
+                         std::ofstream& outputFile, 
+                         const std::string& algorithmName, 
+                         const std::string& arrayType, 
+                         int size, 
+                         int target) {
     try {
-        // Construir a árvore com os valores iniciais
-        for (int val : arr) {
-            tree.insert(val);
+        std::cerr << "Testando " << algorithmName << " no array " << arrayType << " de tamanho " << size << std::endl;
+        
+        if (!outputFile) {
+            throw std::runtime_error("Arquivo de saída não está aberto");
         }
 
-        // Inserção de um valor adicional
-        Metrics insertMetrics = tree.insert(additionalValue);
-        outputFile << treeName << "_Insert," << arrayType << "," << size << "," << insertMetrics.comparisons << "," << insertMetrics.movements << "," << insertMetrics.time_us << endl;
+        Metrics searchMetrics = searchFunction(arr, target);
+        searchMetrics.algorithm = algorithmName;
+        searchMetrics.arrayType = arrayType;
+        searchMetrics.size = size;
 
-        // Busca
-        Metrics searchMetrics = tree.search(target);
-        outputFile << treeName << "_Search," << arrayType << "," << size << "," << searchMetrics.comparisons << "," << searchMetrics.movements << "," << searchMetrics.time_us << endl;
+        if (searchMetrics.algorithm.empty() || searchMetrics.arrayType.empty()) {
+            throw std::runtime_error("Strings não foram inicializadas corretamente");
+        }
 
-        // Remoção
-        Metrics removeMetrics = tree.remove(target);
-        outputFile << treeName << "_Remove," << arrayType << "," << size << "," << removeMetrics.comparisons << "," << removeMetrics.movements << "," << removeMetrics.time_us << endl;
+        outputFile << searchMetrics.algorithm << "," << searchMetrics.arrayType << "," << searchMetrics.size << "," << searchMetrics.comparisons << "," << searchMetrics.movements << "," << searchMetrics.time_us << std::endl;
 
-    } catch (const exception& e) {
-        cerr << "Erro ao testar " << treeName << " no array " << arrayType << " de tamanho " << size << ": " << e.what() << endl;
+        std::cerr << algorithmName << " no array " << arrayType << " de tamanho " << size << " completado" << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Erro ao testar " << algorithmName << " no array " << arrayType << " de tamanho " << size << ": " << e.what() << std::endl;
     }
 }
 
-// Função para testar busca em arrays
-void testSearchFunction(Metrics (*searchFunction)(const vector<int>&, int), const vector<int>& arr, int target, ofstream& outputFile, const string& functionName, const string& arrayType, int size) {
+// Função para testar um algoritmo de inserção e remoção
+void testInsertRemoveAlgorithm(Metrics (*insertFunction)(std::vector<int>&, int),
+                               Metrics (*removeFunction)(std::vector<int>&, int),
+                               std::vector<int>& arr, 
+                               std::ofstream& outputFile, 
+                               const std::string& algorithmName, 
+                               const std::string& arrayType, 
+                               int size, 
+                               int target) {
     try {
-        cerr << "Testando " << functionName << " no array " << arrayType << " de tamanho " << size << endl;
-        Metrics metrics = searchFunction(arr, target);
-        outputFile << functionName << "," << arrayType << "," << size << "," << metrics.comparisons << "," << metrics.movements << "," << metrics.time_us << endl;
-        cerr << functionName << " no array " << arrayType << " de tamanho " << size << " completado" << endl;
-    } catch (const exception& e) {
-        cerr << "Erro ao testar " << functionName << " no array " << arrayType << " de tamanho " << size << ": " << e.what() << endl;
+        std::cerr << "Testando " << algorithmName << " no array " << arrayType << " de tamanho " << size << std::endl;
+
+        if (!outputFile) {
+            throw std::runtime_error("Arquivo de saída não está aberto");
+        }
+
+        // Testar inserção
+        Metrics insertMetrics = insertFunction(arr, target);
+        insertMetrics.algorithm = algorithmName + "Insert";
+        insertMetrics.arrayType = arrayType;
+        insertMetrics.size = size;
+
+        // Testar remoção
+        Metrics removeMetrics = removeFunction(arr, target);
+        removeMetrics.algorithm = algorithmName + "Remove";
+        removeMetrics.arrayType = arrayType;
+        removeMetrics.size = size;
+
+        // Registrar métricas no arquivo
+        outputFile << insertMetrics.algorithm << "," << insertMetrics.arrayType << "," << insertMetrics.size << "," << insertMetrics.comparisons << "," << insertMetrics.movements << "," << insertMetrics.time_us << std::endl;
+        outputFile << removeMetrics.algorithm << "," << removeMetrics.arrayType << "," << removeMetrics.size << "," << removeMetrics.comparisons << "," << removeMetrics.movements << "," << removeMetrics.time_us << std::endl;
+
+        std::cerr << algorithmName << " no array " << arrayType << " de tamanho " << size << " completado" << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Erro ao testar " << algorithmName << " no array " << arrayType << " de tamanho " << size << ": " << e.what() << std::endl;
+    }
+}
+
+
+// Função para testar um algoritmo de inserção e remoção (para AVLTree)
+void testInsertRemoveAlgorithmTree(Metrics (AVLTree::*insertFunction)(int),
+                                   Metrics (AVLTree::*removeFunction)(int),
+                                   AVLTree& tree, 
+                                   std::vector<int>& arr, 
+                                   std::ofstream& outputFile, 
+                                   const std::string& algorithmName, 
+                                   const std::string& arrayType, 
+                                   int size, 
+                                   int target) {
+    try {
+        std::cerr << "Testando " << algorithmName << " no array " << arrayType << " de tamanho " << size << std::endl;
+        
+        if (!outputFile) {
+            throw std::runtime_error("Arquivo de saída não está aberto");
+        }
+
+        // Métricas de inserção
+        Metrics totalInsertMetrics = {algorithmName + "Insert", arrayType, size, 0, 0, 0.0};
+        auto start = std::chrono::high_resolution_clock::now();
+        for (const auto& value : arr) {
+            Metrics insertMetrics = (tree.*insertFunction)(value);
+            totalInsertMetrics.comparisons += insertMetrics.comparisons;
+            totalInsertMetrics.movements += insertMetrics.movements;
+        }
+        auto end = std::chrono::high_resolution_clock::now();
+        totalInsertMetrics.time_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+        outputFile << totalInsertMetrics.algorithm << "," << totalInsertMetrics.arrayType << "," << totalInsertMetrics.size << "," << totalInsertMetrics.comparisons << "," << totalInsertMetrics.movements << "," << totalInsertMetrics.time_us << std::endl;
+
+        // Métricas de remoção
+        Metrics totalRemoveMetrics = {algorithmName + "Remove", arrayType, size, 0, 0, 0.0};
+        start = std::chrono::high_resolution_clock::now();
+        for (const auto& value : arr) {
+            Metrics removeMetrics = (tree.*removeFunction)(value);
+            totalRemoveMetrics.comparisons += removeMetrics.comparisons;
+            totalRemoveMetrics.movements += removeMetrics.movements;
+        }
+        end = std::chrono::high_resolution_clock::now();
+        totalRemoveMetrics.time_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+        outputFile << totalRemoveMetrics.algorithm << "," << totalRemoveMetrics.arrayType << "," << totalRemoveMetrics.size << "," << totalRemoveMetrics.comparisons << "," << totalRemoveMetrics.movements << "," << totalRemoveMetrics.time_us << std::endl;
+
+        std::cerr << algorithmName << " no array " << arrayType << " de tamanho " << size << " completado" << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Erro ao testar " << algorithmName << " no array " << arrayType << " de tamanho " << size << ": " << e.what() << std::endl;
     }
 }
 
 int main() {
-    ofstream outputFile("search_results.csv");
-    outputFile << "Operation,ArrayType,Size,Comparisons,Movements,Time(us)" << endl;
+    std::ofstream outputFile("search_results.csv");
+    outputFile << "Algorithm,ArrayType,Size,Comparisons,Movements,Time(us)" << std::endl;
 
-    vector<int> sizes = {10, 100, 1000, 10000, 100000, 1000000};
+    std::vector<int> sizes = {10, 100, 1000, 10000, 100000, 1000000};
+    int target = 1; // Elemento que será buscado/removido
+
     for (int size : sizes) {
-        cerr << "Processando arrays de tamanho " << size << endl;
+        std::cerr << "Processando arrays de tamanho " << size << std::endl;
 
         // Gerar arrays
-        vector<int> sortedArray = generateSortedArray(size);
-        vector<int> reversedArray = generateReversedArray(size);
-        vector<int> almostSortedArray = generateAlmostSortedArray(size);
-        vector<int> randomArray = generateRandomArray(size);
-        int target = sortedArray[size / 2]; // Um valor presente nos arrays
-        int additionalValue = size + 1; // Um valor que será inserido adicionalmente
+        std::vector<int> sortedArray = generateSortedArray(size);
+        std::vector<int> reversedArray = generateReversedArray(size);
+        std::vector<int> almostSortedArray = generateAlmostSortedArray(size);
+        std::vector<int> randomArray = generateRandomArray(size);
 
         // Testar LinearSearch
-        testSearchFunction(linearSearch, sortedArray, target, outputFile, "LinearSearch", "Sorted", size);
-        testSearchFunction(linearSearch, reversedArray, target, outputFile, "LinearSearch", "Reversed", size);
-        testSearchFunction(linearSearch, almostSortedArray, target, outputFile, "LinearSearch", "AlmostSorted", size);
-        testSearchFunction(linearSearch, randomArray, target, outputFile, "LinearSearch", "Random", size);
+        testSearchAlgorithm(linearSearch, sortedArray, outputFile, "LinearSearch", "Sorted", size, target);
+        testSearchAlgorithm(linearSearch, reversedArray, outputFile, "LinearSearch", "Reversed", size, target);
+        testSearchAlgorithm(linearSearch, almostSortedArray, outputFile, "LinearSearch", "AlmostSorted", size, target);
+        testSearchAlgorithm(linearSearch, randomArray, outputFile, "LinearSearch", "Random", size, target);
 
-        // Testar BinarySearch
-        testSearchFunction(binarySearch, sortedArray, target, outputFile, "BinarySearch", "Sorted", size);
-        testSearchFunction(binarySearch, reversedArray, target, outputFile, "BinarySearch", "Reversed", size);
-        testSearchFunction(binarySearch, almostSortedArray, target, outputFile, "BinarySearch", "AlmostSorted", size);
-        testSearchFunction(binarySearch, randomArray, target, outputFile, "BinarySearch", "Random", size);
-
-        // Testar BinarySearchTree
-        {
-            BinarySearchTree bst;
-            testTreeOperations(bst, sortedArray, additionalValue, target, outputFile, "BinarySearchTree", "Sorted", size);
-            testTreeOperations(bst, reversedArray, additionalValue, target, outputFile, "BinarySearchTree", "Reversed", size);
-            testTreeOperations(bst, almostSortedArray, additionalValue, target, outputFile, "BinarySearchTree", "AlmostSorted", size);
-            testTreeOperations(bst, randomArray, additionalValue, target, outputFile, "BinarySearchTree", "Random", size);
-        }
+        testInsertRemoveAlgorithm(linearInsert, linearRemove, sortedArray, outputFile, "LinearSearch", "Sorted", size, target);
+        testInsertRemoveAlgorithm(linearInsert, linearRemove, reversedArray, outputFile, "LinearSearch", "Reversed", size, target);
+        testInsertRemoveAlgorithm(linearInsert, linearRemove, almostSortedArray, outputFile, "LinearSearch", "AlmostSorted", size, target);
+        testInsertRemoveAlgorithm(linearInsert, linearRemove, randomArray, outputFile, "LinearSearch", "Random", size, target);
 
         // Testar AVLTree
-        {
-            AVLTree avl;
-            testTreeOperations(avl, sortedArray, additionalValue, target, outputFile, "AVLTree", "Sorted", size);
-            testTreeOperations(avl, reversedArray, additionalValue, target, outputFile, "AVLTree", "Reversed", size);
-            testTreeOperations(avl, almostSortedArray, additionalValue, target, outputFile, "AVLTree", "AlmostSorted", size);
-            testTreeOperations(avl, randomArray, additionalValue, target, outputFile, "AVLTree", "Random", size);
-        }
-
-        // Testar RedBlackTree
-        {
-            RedBlackTree rbt;
-            testTreeOperations(rbt, sortedArray, additionalValue, target, outputFile, "RedBlackTree", "Sorted", size);
-            testTreeOperations(rbt, reversedArray, additionalValue, target, outputFile, "RedBlackTree", "Reversed", size);
-            testTreeOperations(rbt, almostSortedArray, additionalValue, target, outputFile, "RedBlackTree", "AlmostSorted", size);
-            testTreeOperations(rbt, randomArray, additionalValue, target, outputFile, "RedBlackTree", "Random", size);
-        }
+        AVLTree avlTree;
+        testInsertRemoveAlgorithmTree(&AVLTree::insert, &AVLTree::remove, avlTree, sortedArray, outputFile, "AVLTree", "Sorted", size, target);
+        avlTree = AVLTree(); // Reiniciar a árvore para o próximo teste
+        testInsertRemoveAlgorithmTree(&AVLTree::insert, &AVLTree::remove, avlTree, reversedArray, outputFile, "AVLTree", "Reversed", size, target);
+        avlTree = AVLTree(); // Reiniciar a árvore para o próximo teste
+        testInsertRemoveAlgorithmTree(&AVLTree::insert, &AVLTree::remove, avlTree, almostSortedArray, outputFile, "AVLTree", "AlmostSorted", size, target);
+        avlTree = AVLTree(); // Reiniciar a árvore para o próximo teste
+        testInsertRemoveAlgorithmTree(&AVLTree::insert, &AVLTree::remove, avlTree, randomArray, outputFile, "AVLTree", "Random", size, target);
 
         // Liberação de memória
         sortedArray.clear();
@@ -152,10 +211,10 @@ int main() {
         almostSortedArray.shrink_to_fit();
         randomArray.shrink_to_fit();
 
-        cerr << "Processamento de arrays de tamanho " << size << " finalizado" << endl;
+        std::cerr << "Processamento de arrays de tamanho " << size << " finalizado" << std::endl;
     }
 
     outputFile.close();
-    cerr << "Programa finalizado" << endl;
+    std::cerr << "Programa finalizado" << std::endl;
     return 0;
 }
