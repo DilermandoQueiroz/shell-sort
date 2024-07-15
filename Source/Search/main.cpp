@@ -117,10 +117,11 @@ void testInsertRemoveAlgorithm(Metrics (*insertFunction)(std::vector<int>&, int)
     }
 }
 
-// Função para testar um algoritmo de inserção e remoção (para AVLTree)
-void testInsertRemoveAlgorithmTree(Metrics (AVLTree::*insertFunction)(int),
-                                   Metrics (AVLTree::*removeFunction)(int),
-                                   AVLTree& tree, 
+// Função para testar um algoritmo de inserção e remoção (para AVLTree e BinarySearchTree)
+template <typename TreeType>
+void testInsertRemoveAlgorithmTree(Metrics (TreeType::*insertFunction)(int),
+                                   Metrics (TreeType::*removeFunction)(int),
+                                   TreeType& tree, 
                                    std::vector<int>& arr, 
                                    std::ofstream& outputFile, 
                                    const std::string& algorithmName, 
@@ -238,6 +239,12 @@ int main() {
         testInsertRemoveAlgorithm(linearInsert, linearRemove, almostSortedArray, outputFile, "LinearSearch", "AlmostSorted", size, target);
         testInsertRemoveAlgorithm(linearInsert, linearRemove, randomArray, outputFile, "LinearSearch", "Random", size, target);
 
+        // Testar BinarySearch
+        testSearchAlgorithm(binarySearch, sortedArray, outputFile, "BinarySearch", "Sorted", size, target);
+        testSearchAlgorithm(binarySearch, reversedArray, outputFile, "BinarySearch", "Reversed", size, target);
+        testSearchAlgorithm(binarySearch, almostSortedArray, outputFile, "BinarySearch", "AlmostSorted", size, target);
+        testSearchAlgorithm(binarySearch, randomArray, outputFile, "BinarySearch", "Random", size, target);
+
         // Testar AVLTree
         AVLTree avlTree;
         testInsertRemoveAlgorithmTree(&AVLTree::insert, &AVLTree::remove, avlTree, sortedArray, outputFile, "AVLTree", "Sorted", size, target);
@@ -257,6 +264,16 @@ int main() {
         testInsertRemoveAlgorithmFingerTree(&FingerTree::insert, &FingerTree::remove, fingerTree, almostSortedArray, outputFile, "FingerTree", "AlmostSorted", size, target);
         fingerTree = FingerTree(); // Reiniciar a árvore para o próximo teste
         testInsertRemoveAlgorithmFingerTree(&FingerTree::insert, &FingerTree::remove, fingerTree, randomArray, outputFile, "FingerTree", "Random", size, target);
+
+        // Testar BinarySearchTree
+        BinarySearchTree bst;
+        testInsertRemoveAlgorithmTree(&BinarySearchTree::insert, &BinarySearchTree::remove, bst, sortedArray, outputFile, "BinarySearchTree", "Sorted", size, target);
+        bst = BinarySearchTree(); // Reiniciar a árvore para o próximo teste
+        testInsertRemoveAlgorithmTree(&BinarySearchTree::insert, &BinarySearchTree::remove, bst, reversedArray, outputFile, "BinarySearchTree", "Reversed", size, target);
+        bst = BinarySearchTree(); // Reiniciar a árvore para o próximo teste
+        testInsertRemoveAlgorithmTree(&BinarySearchTree::insert, &BinarySearchTree::remove, bst, almostSortedArray, outputFile, "BinarySearchTree", "AlmostSorted", size, target);
+        bst = BinarySearchTree(); // Reiniciar a árvore para o próximo teste
+        testInsertRemoveAlgorithmTree(&BinarySearchTree::insert, &BinarySearchTree::remove, bst, randomArray, outputFile, "BinarySearchTree", "Random", size, target);
 
         // Liberação de memória
         sortedArray.clear();

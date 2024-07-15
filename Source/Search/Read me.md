@@ -28,7 +28,7 @@ Este projeto tem como objetivo analisar o desempenho de diferentes algoritmos de
 
 2. **Compile o projeto:**
     ```bash
-    g++ -o main main.cpp LinearSearch.cpp AVLTree.cpp FingerTree.cpp
+    g++ -o main main.cpp LinearSearch.cpp AVLTree.cpp FingerTree.cpp binarySearch.cpp binarySearchTree.cpp
     ```
 
 3. **Execute o programa:**

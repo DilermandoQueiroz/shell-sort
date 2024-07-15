@@ -1,8 +1,22 @@
 #include "BinarySearchTree.h"
 #include <chrono>
 
+BinarySearchTree::BinarySearchTree() : root(nullptr) {}
+
+BinarySearchTree::~BinarySearchTree() {
+    destroyTree(root);
+}
+
+void BinarySearchTree::destroyTree(Node* node) {
+    if (node) {
+        destroyTree(node->left);
+        destroyTree(node->right);
+        delete node;
+    }
+}
+
 Metrics BinarySearchTree::insert(int value) {
-    Metrics metrics = {0, 0, 0};
+    Metrics metrics;
     auto start = std::chrono::high_resolution_clock::now();
 
     root = insert(root, value, metrics);
@@ -12,11 +26,12 @@ Metrics BinarySearchTree::insert(int value) {
     return metrics;
 }
 
-Node* BinarySearchTree::insert(Node* node, int value, Metrics& metrics) {
-    if (node == nullptr) {
+BinarySearchTree::Node* BinarySearchTree::insert(Node* node, int value, Metrics& metrics) {
+    if (!node) {
         metrics.movements++;
         return new Node(value);
     }
+
     metrics.comparisons++;
     if (value < node->data) {
         node->left = insert(node->left, value, metrics);
@@ -27,7 +42,7 @@ Node* BinarySearchTree::insert(Node* node, int value, Metrics& metrics) {
 }
 
 Metrics BinarySearchTree::search(int value) {
-    Metrics metrics = {0, 0, 0};
+    Metrics metrics;
     auto start = std::chrono::high_resolution_clock::now();
 
     search(root, value, metrics);
@@ -37,13 +52,13 @@ Metrics BinarySearchTree::search(int value) {
     return metrics;
 }
 
-Node* BinarySearchTree::search(Node* node, int value, Metrics& metrics) {
-    if (node == nullptr || node->data == value) {
-        metrics.comparisons++;
-        return node;
-    }
+BinarySearchTree::Node* BinarySearchTree::search(Node* node, int value, Metrics& metrics) {
+    if (!node) return nullptr;
+
     metrics.comparisons++;
-    if (value < node->data) {
+    if (node->data == value) {
+        return node;
+    } else if (value < node->data) {
         return search(node->left, value, metrics);
     } else {
         return search(node->right, value, metrics);
@@ -51,7 +66,7 @@ Node* BinarySearchTree::search(Node* node, int value, Metrics& metrics) {
 }
 
 Metrics BinarySearchTree::remove(int value) {
-    Metrics metrics = {0, 0, 0};
+    Metrics metrics;
     auto start = std::chrono::high_resolution_clock::now();
 
     root = remove(root, value, metrics);
@@ -61,11 +76,8 @@ Metrics BinarySearchTree::remove(int value) {
     return metrics;
 }
 
-Node* BinarySearchTree::remove(Node* node, int value, Metrics& metrics) {
-    if (node == nullptr) {
-        metrics.comparisons++;
-        return node;
-    }
+BinarySearchTree::Node* BinarySearchTree::remove(Node* node, int value, Metrics& metrics) {
+    if (!node) return nullptr;
 
     metrics.comparisons++;
     if (value < node->data) {
@@ -74,25 +86,25 @@ Node* BinarySearchTree::remove(Node* node, int value, Metrics& metrics) {
         node->right = remove(node->right, value, metrics);
     } else {
         metrics.movements++;
-        if (node->left == nullptr) {
-            Node* temp = node->right;
+        if (!node->left) {
+            Node* rightNode = node->right;
             delete node;
-            return temp;
-        } else if (node->right == nullptr) {
-            Node* temp = node->left;
+            return rightNode;
+        } else if (!node->right) {
+            Node* leftNode = node->left;
             delete node;
-            return temp;
+            return leftNode;
+        } else {
+            Node* minNode = findMin(node->right);
+            node->data = minNode->data;
+            node->right = remove(node->right, minNode->data, metrics);
         }
-        
-        Node* temp = findMin(node->right);
-        node->data = temp->data;
-        node->right = remove(node->right, temp->data, metrics);
     }
     return node;
 }
 
-Node* BinarySearchTree::findMin(Node* node) {
-    while (node->left != nullptr) {
+BinarySearchTree::Node* BinarySearchTree::findMin(Node* node) {
+    while (node && node->left) {
         node = node->left;
     }
     return node;

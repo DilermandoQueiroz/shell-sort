@@ -1,5 +1,5 @@
-#ifndef BINARYSEARCH_H
-#define BINARYSEARCH_H
+#ifndef BINARY_SEARCH_H
+#define BINARY_SEARCH_H
 
 #include <vector>
 #include "Metrics.h"

@@ -1,19 +1,17 @@
 #include "BinarySearch.h"
+#include <algorithm>
 #include <chrono>
-#include <algorithm> // Para std::lower_bound e std::upper_bound
 
 Metrics binarySearch(const std::vector<int>& arr, int target) {
-    Metrics metrics = {0, 0, 0}; // Inicializa os valores de métricas
-    auto start = std::chrono::high_resolution_clock::now(); // Inicia a contagem do tempo
+    Metrics metrics;
+    auto start = std::chrono::high_resolution_clock::now();
 
-    int left = 0;
-    int right = arr.size() - 1;
+    int left = 0, right = arr.size() - 1;
     while (left <= right) {
+        metrics.comparisons++;
         int mid = left + (right - left) / 2;
-        metrics.comparisons++; // Incrementa a contagem de comparações
-
         if (arr[mid] == target) {
-            break; // Elemento encontrado
+            break;
         } else if (arr[mid] < target) {
             left = mid + 1;
         } else {
@@ -21,38 +19,35 @@ Metrics binarySearch(const std::vector<int>& arr, int target) {
         }
     }
 
-    auto end = std::chrono::high_resolution_clock::now(); // Finaliza a contagem do tempo
-    metrics.time_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count(); // Calcula o tempo de execução
+    auto end = std::chrono::high_resolution_clock::now();
+    metrics.time_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     return metrics;
 }
 
-Metrics binaryInsert(std::vector<int>& arr, int target) {
-    Metrics metrics = {0, 0, 0}; // Inicializa os valores de métricas
-    auto start = std::chrono::high_resolution_clock::now(); // Inicia a contagem do tempo
+Metrics binaryInsert(std::vector<int>& arr, int value) {
+    Metrics metrics;
+    auto start = std::chrono::high_resolution_clock::now();
 
-    auto it = std::lower_bound(arr.begin(), arr.end(), target);
-    metrics.comparisons = std::distance(arr.begin(), it); // Número de comparações até encontrar a posição correta
-    arr.insert(it, target);
-    metrics.movements = std::distance(it, arr.end()); // Movimentos necessários para inserir
+    arr.push_back(value);
+    std::sort(arr.begin(), arr.end());
+    metrics.movements += arr.size();  // Approximate movements
 
-    auto end = std::chrono::high_resolution_clock::now(); // Finaliza a contagem do tempo
-    metrics.time_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count(); // Calcula o tempo de execução
+    auto end = std::chrono::high_resolution_clock::now();
+    metrics.time_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     return metrics;
 }
 
-Metrics binaryRemove(std::vector<int>& arr, int target) {
-    Metrics metrics = {0, 0, 0}; // Inicializa os valores de métricas
-    auto start = std::chrono::high_resolution_clock::now(); // Inicia a contagem do tempo
+Metrics binaryRemove(std::vector<int>& arr, int value) {
+    Metrics metrics;
+    auto start = std::chrono::high_resolution_clock::now();
 
-    auto it = std::lower_bound(arr.begin(), arr.end(), target);
-    metrics.comparisons = std::distance(arr.begin(), it); // Número de comparações até encontrar a posição correta
-
-    if (it != arr.end() && *it == target) {
+    auto it = std::lower_bound(arr.begin(), arr.end(), value);
+    if (it != arr.end() && *it == value) {
         arr.erase(it);
-        metrics.movements = std::distance(it, arr.end()); // Movimentos necessários para remover
+        metrics.movements++;
     }
 
-    auto end = std::chrono::high_resolution_clock::now(); // Finaliza a contagem do tempo
-    metrics.time_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count(); // Calcula o tempo de execução
+    auto end = std::chrono::high_resolution_clock::now();
+    metrics.time_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     return metrics;
 }
