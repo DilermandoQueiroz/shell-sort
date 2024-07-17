@@ -1,6 +1,7 @@
 #include "BinarySearch.h"
 #include <algorithm>
 #include <chrono>
+#include <iostream>
 
 Metrics binarySearch(const std::vector<int>& arr, int target) {
     Metrics metrics;
@@ -10,6 +11,7 @@ Metrics binarySearch(const std::vector<int>& arr, int target) {
     while (left <= right) {
         metrics.comparisons++;
         int mid = left + (right - left) / 2;
+        std::cerr << "Comparação " << metrics.comparisons << ": left = " << left << ", mid = " << mid << ", right = " << right << ", valor mid = " << arr[mid] << std::endl;
         if (arr[mid] == target) {
             break;
         } else if (arr[mid] < target) {
