@@ -1,7 +1,8 @@
 #include "AVLTree.h"
 #include "Metrics.h"
 #include <chrono>
-#include <algorithm> // Para std::max
+#include <algorithm>
+#include <iostream> // Para depuração
 
 int AVLTree::height(AVLNode* node) {
     return node ? node->height : 0;
@@ -45,6 +46,7 @@ Metrics AVLTree::insert(int value) {
 
     auto end = std::chrono::high_resolution_clock::now();
     metrics.time_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    std::cerr << "Insert - Comparisons: " << metrics.comparisons << ", Movements: " << metrics.movements << std::endl; // Log para depuração
     return metrics;
 }
 
@@ -66,20 +68,24 @@ AVLNode* AVLTree::insert(AVLNode* node, int value, Metrics& metrics) {
     int balance = getBalance(node);
 
     if (balance > 1 && value < node->left->data) {
+        metrics.movements++; // Contabilizar o movimento
         return rightRotate(node);
     }
 
     if (balance < -1 && value > node->right->data) {
+        metrics.movements++; // Contabilizar o movimento
         return leftRotate(node);
     }
 
     if (balance > 1 && value > node->left->data) {
         node->left = leftRotate(node->left);
+        metrics.movements += 2; // Contabilizar o movimento
         return rightRotate(node);
     }
 
     if (balance < -1 && value < node->right->data) {
         node->right = rightRotate(node->right);
+        metrics.movements += 2; // Contabilizar o movimento
         return leftRotate(node);
     }
 
@@ -90,16 +96,18 @@ Metrics AVLTree::search(int value) {
     Metrics metrics = {"AVLTreeSearch", "Unknown", 0, 0, 0, 0.0};
     auto start = std::chrono::high_resolution_clock::now();
 
-    search(root, value, metrics);
+    AVLNode* result = search(root, value, metrics);
 
     auto end = std::chrono::high_resolution_clock::now();
     metrics.time_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    std::cerr << "Search - Comparisons: " << metrics.comparisons << ", Movements: " << metrics.movements << ", Found: " << (result != nullptr) << std::endl; // Log para depuração
     return metrics;
 }
 
 AVLNode* AVLTree::search(AVLNode* node, int value, Metrics& metrics) {
     if (node == nullptr || node->data == value) {
         metrics.comparisons++;
+        std::cerr << "Search - Node: " << (node ? node->data : -1) << ", Value: " << value << std::endl; // Log para depuração
         return node;
     }
     metrics.comparisons++;
@@ -118,6 +126,7 @@ Metrics AVLTree::remove(int value) {
 
     auto end = std::chrono::high_resolution_clock::now();
     metrics.time_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    std::cerr << "Remove - Comparisons: " << metrics.comparisons << ", Movements: " << metrics.movements << std::endl; // Log para depuração
     return metrics;
 }
 
@@ -156,20 +165,24 @@ AVLNode* AVLTree::remove(AVLNode* node, int value, Metrics& metrics) {
     int balance = getBalance(node);
 
     if (balance > 1 && getBalance(node->left) >= 0) {
+        metrics.movements++; // Contabilizar o movimento
         return rightRotate(node);
     }
 
     if (balance > 1 && getBalance(node->left) < 0) {
         node->left = leftRotate(node->left);
+        metrics.movements += 2; // Contabilizar o movimento
         return rightRotate(node);
     }
 
     if (balance < -1 && getBalance(node->right) <= 0) {
+        metrics.movements++; // Contabilizar o movimento
         return leftRotate(node);
     }
 
     if (balance < -1 && getBalance(node->right) > 0) {
         node->right = rightRotate(node->right);
+        metrics.movements += 2; // Contabilizar o movimento
         return leftRotate(node);
     }
 

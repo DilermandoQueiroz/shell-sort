@@ -61,17 +61,18 @@ void testSearchAlgorithm(Metrics (*searchFunction)(const std::vector<int>&, int)
             throw std::runtime_error("Arquivo de saída não está aberto");
         }
 
+        auto start = std::chrono::high_resolution_clock::now();
         Metrics searchMetrics = searchFunction(arr, target);
+        auto end = std::chrono::high_resolution_clock::now();
+        searchMetrics.time_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
         searchMetrics.algorithm = algorithmName;
         searchMetrics.arrayType = arrayType;
         searchMetrics.size = size;
 
-        if (searchMetrics.algorithm.empty() || searchMetrics.arrayType.empty()) {
-            throw std::runtime_error("Strings não foram inicializadas corretamente");
-        }
-
         outputFile << searchMetrics.algorithm << "," << searchMetrics.arrayType << "," << searchMetrics.size << "," << searchMetrics.comparisons << "," << searchMetrics.movements << "," << searchMetrics.time_us << std::endl;
 
+        std::cerr << "Tempo de busca (us): " << searchMetrics.time_us << std::endl;
         std::cerr << algorithmName << " no array " << arrayType << " de tamanho " << size << " completado" << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Erro ao testar " << algorithmName << " no array " << arrayType << " de tamanho " << size << ": " << e.what() << std::endl;
@@ -180,13 +181,18 @@ void testSearchAlgorithmTree(Metrics (TreeType::*searchFunction)(int),
             throw std::runtime_error("Arquivo de saída não está aberto");
         }
 
+        auto start = std::chrono::high_resolution_clock::now();
         Metrics searchMetrics = (tree.*searchFunction)(target);
+        auto end = std::chrono::high_resolution_clock::now();
+        searchMetrics.time_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
         searchMetrics.algorithm = algorithmName;
         searchMetrics.arrayType = arrayType;
         searchMetrics.size = size;
 
         outputFile << searchMetrics.algorithm << "," << searchMetrics.arrayType << "," << searchMetrics.size << "," << searchMetrics.comparisons << "," << searchMetrics.movements << "," << searchMetrics.time_us << std::endl;
 
+        std::cerr << "Tempo de busca (us): " << searchMetrics.time_us << std::endl;
         std::cerr << algorithmName << " no array " << arrayType << " de tamanho " << size << " completado" << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Erro ao testar " << algorithmName << " no array " << arrayType << " de tamanho " << size << ": " << e.what() << std::endl;
@@ -255,13 +261,18 @@ void testSearchAlgorithmFingerTree(Metrics (FingerTree::*searchFunction)(int),
             throw std::runtime_error("Arquivo de saída não está aberto");
         }
 
+        auto start = std::chrono::high_resolution_clock::now();
         Metrics searchMetrics = (tree.*searchFunction)(target);
+        auto end = std::chrono::high_resolution_clock::now();
+        searchMetrics.time_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
         searchMetrics.algorithm = algorithmName;
         searchMetrics.arrayType = arrayType;
         searchMetrics.size = size;
 
         outputFile << searchMetrics.algorithm << "," << searchMetrics.arrayType << "," << searchMetrics.size << "," << searchMetrics.comparisons << "," << searchMetrics.movements << "," << searchMetrics.time_us << std::endl;
 
+        std::cerr << "Tempo de busca (us): " << searchMetrics.time_us << std::endl;
         std::cerr << algorithmName << " no array " << arrayType << " de tamanho " << size << " completado" << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Erro ao testar " << algorithmName << " no array " << arrayType << " de tamanho " << size << ": " << e.what() << std::endl;
@@ -269,11 +280,11 @@ void testSearchAlgorithmFingerTree(Metrics (FingerTree::*searchFunction)(int),
 }
 
 int main() {
-    std::ofstream outputFile("search_results.csv");
+    std::ofstream outputFile("results.csv");
     outputFile << "Algorithm,ArrayType,Size,Comparisons,Movements,Time(us)" << std::endl;
 
-    std::vector<int> sizes = {10, 100, 1000, 10000, 100000, 1000000};
-    int target = 1; // Elemento que será buscado/removido
+    std::vector<int> sizes = {10, 100, 1000, 10000, 100000};
+    int target = 50000; // Elemento que será buscado/removido (um valor que está aproximadamente no meio do array)
 
     for (int size : sizes) {
         std::cerr << "Processando arrays de tamanho " << size << std::endl;
